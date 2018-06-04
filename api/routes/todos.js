@@ -97,13 +97,19 @@ router.patch('/:todoId', checkAuth, (req, res, next) => {
 router.delete('/:todoId', checkAuth, (req, res, next) => {
     const id = req.params.todoId;
     let author = req.payload.email;
-    User.find({email: author})
-    .populate('todos')
+    User.findOne({email: author})
+    //.populate('todos')
     .exec()
     .then(user => {
-        user.todos = user.todos.filter(function(e) { return e._id !== id});
+        if(!user){
+            return res.status(500).json({
+                error: "User not found"
+            });
+        }
+        console.log(user);
+        user.todos = user.todos.filter(function(e) { return e !== id});
         user.save();
-        TODO.findByIdAndRemove(id)
+        TODO.remove({_id: id})
         .exec()
         .then(response => {
             if(!response){
@@ -111,9 +117,10 @@ router.delete('/:todoId', checkAuth, (req, res, next) => {
                     err: 'Not found'
                 });
             }
-            return res.status(200).json(result);
+            return res.status(200).json(response);
         })
         .catch(err => {
+            console.log(err)
             res.status(500).json({
                 error: err
             });
