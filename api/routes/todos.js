@@ -75,11 +75,8 @@ router.post('/', checkAuth, (req, res, next) => {
 
 router.patch('/:todoId', checkAuth, (req, res, next) => {
     const id = req.params.todoId;
-    const updateOps = {};
-    for (const ops of req.body) {
-        updateOps[ops.propName] = ops.value;
-    }
-    TODO.update({_id: id}, {$set: updateOps})
+    
+    TODO.update({_id: id}, {$set: req.body})
     .exec()
     .then(result => {
         return res.status(200).json({
